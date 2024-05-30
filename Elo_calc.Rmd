@@ -1,0 +1,204 @@
+---
+title: "testingrmd"
+author: "Anh-Minh Nguyen"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+install.packages("PlayerRatings")
+install.packages("dplyr")
+library("PlayerRatings")
+library("dplyr")
+
+phase 1 - collect scores
+  group by map ID, split by groups
+  list score_history stores inputs to elom
+  df time_indices stores associations between Datetime 
+     and entry indices in score_history
+  for each group -
+     while there are scores to be processed:
+       select all scores set on that map in the following 2 weeks.
+         call this subset map_scores.
+         delete map_scores from the group.
+       process into a 1-row dataframe containing timestamp, players, scores
+       add an entry to score_history with timestamp and matrix
+       add a row to time_indices with timestamp and latest score_history index
+
+phase 2 - sort score vectors, calculate elo
+  sort score history by datetime
+  iteratively send shards through elom in temporal order
+    send in batches to reduce memory costs
+```{r}
+scores_raw <- read.csv("csvfiles/mp_data/all_mps_0.csv") %>%
+          rbind(read.csv("csvfiles/mp_data/all_mps_1.csv")) %>%
+          rbind(read.csv("csvfiles/mp_data/all_mps_2.csv")) %>%
+          rbind(read.csv("csvfiles/mp_data/all_mps_3.csv")) %>%
+          rbind(read.csv("csvfiles/mp_data/all_mps_4.csv")) %>%
+          rbind(read.csv("csvfiles/mp_data/all_mps_5.csv")) %>%
+          rbind(read.csv("csvfiles/mp_data/all_mps_6.csv"))
+scores <- scores_raw %>%
+          filter(!is.na(UserID)) %>%
+          filter(Score > 1000) %>%
+          distinct()
+
+# convert Datetimes to Epoch time
+A <- function(x) as.numeric(strptime(x, format="%Y-%m-%d %H:%M:%S", tz="UTC"))
+scores$Datetime <- unlist(lapply(scores$Datetime, A))
+scores <- scores %>% arrange(Datetime)
+
+# 1209600 seconds = 2 weeks
+time_limit <- 1209600
+
+# shard data by maps
+scores_maps <- scores %>% group_split(MapID)
+
+score_history <- list()
+time_indices <- data.frame(matrix(ncol = 2, nrow = 0))
+colnames(time_indices) <- c("Datetime", "Index")
+
+# collect scores
+for (map_shard in scores_maps) {
+  while (nrow(map_shard) > 0) {
+    # get data on the earliest score in the shard
+    map <- map_shard$MapID[1]
+    time <- map_shard$Datetime[1]
+    
+    # split shard into scores within timeframe and scores beyond timeframe
+    map_scores <- map_shard %>%
+      filter(Datetime < time + time_limit)
+    map_shard <- map_shard %>%
+      filter(Datetime >= time + time_limit)
+    
+    n <- nrow(map_scores)
+    # skip if only 1 player is found
+    if (n==1) next
+    
+    # set up input to elom
+    players_and_scores <- data.frame(matrix(ncol = 1 + 2*n, nrow = 0))
+    players_and_scores[1, 1] <- time
+    players_and_scores[1, 2:(1 + n)] <- map_scores$UserID
+    players_and_scores[1, (2 + n):(1 + 2*n)] <- map_scores$Score
+    
+    index <- length(score_history) + 1
+    score_history[[index]] <- players_and_scores
+    time_indices <- time_indices %>% add_row(Datetime=time, Index=index)
+  }
+}
+
+# sort score vectors, calc elo in time order
+time_indices <- time_indices %>% arrange(Datetime)
+
+osu_ratings_m3 <- NULL
+# manually run in batches to keep down memory costs
+i_ranges <- list(1:99, 100:999, 1000:4999, 5000:9999, 10000:19999, 20000:34999, 
+                 35000:49999, 50000:64999, 65000:79999, 80000:94999, 95000:109999, 
+                 110000:124999, 125000:149999, 150000:174999, 175000:199999, 200000:214318)
+i_ranges[[length(i_ranges) + 1]] <- (1:length(time_indices$Datetime))
+# i_ranges[[3]]
+# 150000:214318
+# apply elom
+for (i in 150000:214318) {
+  index = time_indices$Index[i]
+  scorevec <- score_history[[index]]
+  n <- (length(scorevec) - 1) / 2
+  base <- seq(30, -30, length.out=n)
+  
+  osu_ratings_m3 <- elom(scorevec, 
+                           nn = n,
+                           base = base, 
+                           status = osu_ratings_m3$ratings,
+                           history = FALSE)
+}
+
+#View(osu_ratings_m3$ratings)
+```
+
+# write all user ids found in the dataset
+# used by scraper.py to get player info
+```{r}
+all_player_ids <- osu_ratings_m3$ratings %>% 
+  select(Player) %>% 
+  unique() %>% 
+  unlist(use.names = FALSE)
+write.csv(all_player_ids, "csvfiles/user_data/all_player_ids.csv", row.names = FALSE)
+```
+
+# compile player data with RME ratings
+```{r}
+player_data <- read.csv("csvfiles/user_data/user_data_0.csv") %>% 
+  rbind(read.csv("csvfiles/user_data/user_data_1.csv")) %>%
+  rbind(read.csv("csvfiles/user_data/user_data_2.csv")) %>%
+  rbind(read.csv("csvfiles/user_data/user_data_3.csv")) %>%
+  rbind(read.csv("csvfiles/user_data/user_data_4.csv")) %>%
+  rbind(read.csv("csvfiles/user_data/user_data_5.csv")) %>%
+  rbind(read.csv("csvfiles/user_data/user_data_6.csv"))
+
+# fill in RME ratings
+player_data <- player_data %>%
+  left_join(osu_ratings_m3$ratings, by = join_by(UserID == Player)) %>%
+  mutate(RME = Rating) %>%
+  select(UserID, Username, GlobalRank, PP, RME, Location, RegistrationDate, Games)
+
+# delete NA values
+# these may happen because a player was banned between 2023 and now
+player_data <- player_data %>%
+  filter((!is.na(RME)) & (!is.na(GlobalRank))) 
+
+# append ordinal rankings by RME
+player_data <- player_data %>%
+  arrange(desc(RME)) %>%
+  mutate(RMERanking = 1:length(player_data$UserID), .after=RME)
+
+write.csv(player_data, "csvfiles/user_data/users_with_RME.csv", row.names = FALSE)
+```
+
+
+# verify raw data
+```{r}
+# find the largest time difference between 2 scores in the dataset 
+library(dplyr)
+setwd("C:/Users/mrche/info201/exploratory-analysis-anguyenuw")
+all <- read.csv("csvfiles/mp_data/all_mps_0.csv") %>% 
+  rbind(read.csv("csvfiles/mp_data/all_mps_1.csv")) %>%
+  rbind(read.csv("csvfiles/mp_data/all_mps_2.csv")) %>%
+  rbind(read.csv("csvfiles/mp_data/all_mps_3.csv")) %>%
+  rbind(read.csv("csvfiles/mp_data/all_mps_4.csv")) %>%
+  rbind(read.csv("csvfiles/mp_data/all_mps_5.csv")) %>%
+  rbind(read.csv("csvfiles/mp_data/all_mps_6.csv"))
+
+
+A <- function(x) as.numeric(strptime(x, format="%Y-%m-%d %H:%M:%S", tz="UTC"))
+
+all$Datetime <- unlist(lapply(all$Datetime, A))
+all <- all %>% arrange(Datetime)
+lagged <- all %>% lag()
+
+awesome <- all 
+awesome <- awesome %>% 
+  mutate(diff = Datetime - (lagged %>% pull(Datetime)))
+
+awesome %>% 
+  select(diff) %>%
+  max(na.rm = TRUE)
+
+# graph a histogram of mp links (find holes)
+library("ggplot2")
+mp_graph_set <- scores
+mp_graph_set$MatchID <- as.numeric(mp_graph_set$MatchID)
+mp_graph <- ggplot(mp_graph_set, aes(x = MatchID)) + 
+  geom_histogram(binwidth = 3000, colour = "black", fill = "lightblue") +
+  coord_cartesian(xlim = c(106000000,114000000), ylim = c(0, 5500))
+mp_graph
+
+unique_users <- wompers
+unique_users <- unique_users %>% group_by(User.ID) %>% slice_head(n=1)
+ggp <- ggplot(unique_users, aes(x = User.ID)) + 
+  geom_histogram(binwidth = 100000, colour = "black", fill = "lightblue") +
+  coord_cartesian(xlim = c(0,33000000), ylim = c(0, 150))
+ggp
+
+```
+

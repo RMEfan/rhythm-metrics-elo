@@ -1,0 +1,63 @@
+---
+title: "Takeaways"
+output: html_fragment
+---
+```{r setup, include=FALSE}
+library(knitr)
+library(kableExtra)
+library(tidyverse)
+library(dplyr)
+```
+
+## Summary Information
+```{r summary info, echo=FALSE, message=FALSE}
+source("summary.R")
+```
+In calculating RME ratings for all tournament participants, we found clear answers to the questions posed at the start of this project:
+
+- Who are the best tournament players?
+- Are highly performant players in tournaments similarly highly ranked in the official leaderboards?
+
+These are the top 5 highest-ranked players in the RME system, with their corresponding official ranks (as of May 20 2024):
+```{r sumtable, echo=FALSE}
+source("summary.R")
+kable(summary_top_5_RME) %>%
+  kable_styling(bootstrap_options = "striped", full_width = FALSE)
+```
+We can see that the best players in the RME system are very highly-ranked in the offical system, including the official #1 osu! player, mrekk.
+
+- Are highly ranked players on the official leaderboards similarly highly ranked in tournament performance?
+
+These are the top 5 highest-ranked players in the offical system (as of May 17 2024), with their corresponding RME ranks:
+```{r sumtable2, echo=FALSE}
+source("summary.R")
+kable(summary_top_5_Osu) %>%
+  kable_styling(bootstrap_options = "striped", full_width = FALSE)
+```
+We also see that the best players in the official ranking system are very highly-ranked in the RME system, with the exception of "chud son", who is not a notable tournament player.
+
+- Is the official osu! ranking system representative of overall skill?
+
+We found that, from Jan 1 2023 to May 20 2024, "active" players (players who set at least 30 scores in the Scores dataset) achieved a mean RME rating of **`r mean_RME %>% round(digits=1)`**, and a median RME rating of **`r median_RME %>% round(digits=1)`**. We define an "*n*-digit player" as a player with *n* digits in their global rank. For example, the 1,900^th^ ranked player is a 4-digit player. Then, the phrase "*n*-digits" refers to every player with *n* digits in their global rank. 
+
+Across the ranks, there is a clear correlation between performance in the official rankings, and performance in tournaments. 6-digits have a mean RME of `r mean_RME_per_digit[6] %>% round(digits=1)`, 5-digits have a mean RME of `r mean_RME_per_digit[5] %>% round(digits=1)`, and 4-, 3-, 2-, and 1- digits have respective mean RMEs of `r mean_RME_per_digit[4] %>% round(digits=1)`, `r mean_RME_per_digit[3] %>% round(digits=1)`, `r mean_RME_per_digit[2] %>% round(digits=1)`, and `r mean_RME_per_digit[1] %>% round(digits=1)`. Higher-ranked players perform far better in tournaments than lower-ranked players. 
+
+Higher-ranked players also play more tournaments on average. Of all active players, 6-digits played a mean of `r mean_Games_per_digit[6] %>% round(digits=0)` maps, 5-digits played a mean of `r mean_Games_per_digit[5] %>% round(digits=0)` maps, and 4-, 3-, 2-, and 1- digits played means of `r mean_Games_per_digit[4] %>% round(digits=0)`, `r mean_Games_per_digit[3] %>% round(digits=0)`, `r mean_Games_per_digit[2] %>% round(digits=0)`, and `r mean_Games_per_digit[1] %>% round(digits=0)` maps respectively. This could mean that higher-ranked players are more motivated to play tournaments, or it could mean that players who play more tournaments become better players.
+
+
+- Does geographic location have any effect on a player's skill?
+
+These are the 15 countries with the most active players from Jan 1 2023 to May 20 2024, along with each country's highest-rated player:
+```{r grouped_table, echo=FALSE}
+source("table_by_country.R")
+kable(table_display2) %>%
+  kable_styling(bootstrap_options = "striped", full_width = FALSE)
+```
+
+We can see that, for all countries, their Average RME hovers within 100 points of the average RME of all active players (`r mean_RME %>% round(digits=1)`). Also, most countries have at least one player in the top 100 RME rankings. This suggests that geographic location has little impact on a player's performance in tournaments.
+
+## Conclusion
+
+- Is the official osu! ranking system representative of overall skill?
+
+By looking at the distribution of RME ratings versus Rank, we can see (for active players) there is a strong negative logarithmic correlation between official rank and RME rating - as a player's rank decreases (i.e. gets closer to #1), their RME rating increases. We also found that most top players in one system are also near the top in the other. Because of this, we believe that the official osu! ranking system is a good indicator of overall skill. However, it isn't perfect, since we can find low-ranked players (below rank 10,000) who play at a very high level in tournaments. This implies there is more work to be done in accurately rating a player's skill in osu!.

@@ -1,0 +1,536 @@
+
+
+
+<div id="summary-information" class="section level2">
+<h2>Summary Information</h2>
+<p>In calculating RME ratings for all tournament participants, we found
+clear answers to the questions posed at the start of this project:</p>
+<ul>
+<li>Who are the best tournament players?</li>
+<li>Are highly performant players in tournaments similarly highly ranked
+in the official leaderboards?</li>
+</ul>
+These are the top 5 highest-ranked players in the RME system, with their
+corresponding official ranks (as of May 20 2024):
+<table class="table table-striped" style="width: auto !important; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:right;">
+RMERanking
+</th>
+<th style="text-align:left;">
+Username
+</th>
+<th style="text-align:right;">
+RME
+</th>
+<th style="text-align:right;">
+GlobalRank
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+worst hr player
+</td>
+<td style="text-align:right;">
+3360.899
+</td>
+<td style="text-align:right;">
+35
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:left;">
+maliszewski
+</td>
+<td style="text-align:right;">
+3340.285
+</td>
+<td style="text-align:right;">
+23
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:left;">
+mrekk
+</td>
+<td style="text-align:right;">
+3213.168
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:left;">
+mcy4
+</td>
+<td style="text-align:right;">
+3150.376
+</td>
+<td style="text-align:right;">
+51
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:left;">
+enri
+</td>
+<td style="text-align:right;">
+3143.320
+</td>
+<td style="text-align:right;">
+14
+</td>
+</tr>
+</tbody>
+</table>
+<p>We can see that the best players in the RME system are very
+highly-ranked in the offical system, including the official #1 osu!
+player, mrekk.</p>
+<ul>
+<li>Are highly ranked players on the official leaderboards similarly
+highly ranked in tournament performance?</li>
+</ul>
+These are the top 5 highest-ranked players in the offical system (as of
+May 17 2024), with their corresponding RME ranks:
+<table class="table table-striped" style="width: auto !important; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:right;">
+GlobalRank
+</th>
+<th style="text-align:left;">
+Username
+</th>
+<th style="text-align:right;">
+RMERanking
+</th>
+<th style="text-align:right;">
+RME
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right;">
+1
+</td>
+<td style="text-align:left;">
+mrekk
+</td>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:right;">
+3213.168
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+2
+</td>
+<td style="text-align:left;">
+Accolibed
+</td>
+<td style="text-align:right;">
+56
+</td>
+<td style="text-align:right;">
+2755.520
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+3
+</td>
+<td style="text-align:left;">
+lifeline
+</td>
+<td style="text-align:right;">
+166
+</td>
+<td style="text-align:right;">
+2543.496
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+4
+</td>
+<td style="text-align:left;">
+chud son
+</td>
+<td style="text-align:right;">
+952
+</td>
+<td style="text-align:right;">
+2070.746
+</td>
+</tr>
+<tr>
+<td style="text-align:right;">
+5
+</td>
+<td style="text-align:left;">
+gnahus
+</td>
+<td style="text-align:right;">
+41
+</td>
+<td style="text-align:right;">
+2786.730
+</td>
+</tr>
+</tbody>
+</table>
+<p>We also see that the best players in the official ranking system are
+very highly-ranked in the RME system, with the exception of “chud son”,
+who is not a notable tournament player.</p>
+<ul>
+<li>Is the official osu! ranking system representative of overall
+skill?</li>
+</ul>
+<p>We found that, from Jan 1 2023 to May 20 2024, “active” players
+(players who set at least 30 scores in the Scores dataset) achieved a
+mean RME rating of <strong>1547.5</strong>, and a median RME rating of
+<strong>1509.4</strong>. We define an “<em>n</em>-digit player” as a
+player with <em>n</em> digits in their global rank. For example, the
+1,900<sup>th</sup> ranked player is a 4-digit player. Then, the phrase
+“<em>n</em>-digits” refers to every player with <em>n</em> digits in
+their global rank.</p>
+<p>Across the ranks, there is a clear correlation between performance in
+the official rankings, and performance in tournaments. 6-digits have a
+mean RME of 1281.8, 5-digits have a mean RME of 1414, and 4-, 3-, 2-,
+and 1- digits have respective mean RMEs of 1748.3, 2137.4, 2547.5, and
+2613.8. Higher-ranked players perform far better in tournaments than
+lower-ranked players.</p>
+<p>Higher-ranked players also play more tournaments on average. Of all
+active players, 6-digits played a mean of 147 maps, 5-digits played a
+mean of 196 maps, and 4-, 3-, 2-, and 1- digits played means of 255,
+297, 450, and 405 maps respectively. This could mean that higher-ranked
+players are more motivated to play tournaments, or it could mean that
+players who play more tournaments become better players.</p>
+<ul>
+<li>Does geographic location have any effect on a player’s skill?</li>
+</ul>
+These are the 15 countries with the most active players from Jan 1 2023
+to May 20 2024, along with each country’s highest-rated player:
+<table class="table table-striped" style="width: auto !important; margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Location
+</th>
+<th style="text-align:right;">
+Players
+</th>
+<th style="text-align:right;">
+Average RME (2023)
+</th>
+<th style="text-align:left;">
+Best Player (2023)
+</th>
+<th style="text-align:right;">
+Best Player’s RME Ranking (2023)
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+United States
+</td>
+<td style="text-align:right;">
+1331
+</td>
+<td style="text-align:right;">
+1554.3
+</td>
+<td style="text-align:left;">
+hydrogen bomb
+</td>
+<td style="text-align:right;">
+7
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Russian Federation
+</td>
+<td style="text-align:right;">
+707
+</td>
+<td style="text-align:right;">
+1540.8
+</td>
+<td style="text-align:left;">
+Chicony
+</td>
+<td style="text-align:right;">
+19
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Germany
+</td>
+<td style="text-align:right;">
+470
+</td>
+<td style="text-align:right;">
+1527.9
+</td>
+<td style="text-align:left;">
+criller
+</td>
+<td style="text-align:right;">
+9
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Canada
+</td>
+<td style="text-align:right;">
+365
+</td>
+<td style="text-align:right;">
+1580.9
+</td>
+<td style="text-align:left;">
+his kitten
+</td>
+<td style="text-align:right;">
+12
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Poland
+</td>
+<td style="text-align:right;">
+307
+</td>
+<td style="text-align:right;">
+1632.4
+</td>
+<td style="text-align:left;">
+maliszewski
+</td>
+<td style="text-align:right;">
+2
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Brazil
+</td>
+<td style="text-align:right;">
+289
+</td>
+<td style="text-align:right;">
+1516.3
+</td>
+<td style="text-align:left;">
+dasdwqdf
+</td>
+<td style="text-align:right;">
+91
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+France
+</td>
+<td style="text-align:right;">
+260
+</td>
+<td style="text-align:right;">
+1596.4
+</td>
+<td style="text-align:left;">
+Ekoro
+</td>
+<td style="text-align:right;">
+15
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+China
+</td>
+<td style="text-align:right;">
+254
+</td>
+<td style="text-align:right;">
+1598.9
+</td>
+<td style="text-align:left;">
+lolol233
+</td>
+<td style="text-align:right;">
+27
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+United Kingdom
+</td>
+<td style="text-align:right;">
+238
+</td>
+<td style="text-align:right;">
+1543.3
+</td>
+<td style="text-align:left;">
+Accolibed
+</td>
+<td style="text-align:right;">
+56
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Taiwan
+</td>
+<td style="text-align:right;">
+235
+</td>
+<td style="text-align:right;">
+1446.0
+</td>
+<td style="text-align:left;">
+willy0214
+</td>
+<td style="text-align:right;">
+73
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Vietnam
+</td>
+<td style="text-align:right;">
+232
+</td>
+<td style="text-align:right;">
+1486.2
+</td>
+<td style="text-align:left;">
+Another Guy
+</td>
+<td style="text-align:right;">
+120
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Indonesia
+</td>
+<td style="text-align:right;">
+230
+</td>
+<td style="text-align:right;">
+1506.4
+</td>
+<td style="text-align:left;">
+DEETO
+</td>
+<td style="text-align:right;">
+52
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+South Korea
+</td>
+<td style="text-align:right;">
+222
+</td>
+<td style="text-align:right;">
+1646.5
+</td>
+<td style="text-align:left;">
+worst hr player
+</td>
+<td style="text-align:right;">
+1
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Australia
+</td>
+<td style="text-align:right;">
+195
+</td>
+<td style="text-align:right;">
+1638.2
+</td>
+<td style="text-align:left;">
+mrekk
+</td>
+<td style="text-align:right;">
+3
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Philippines
+</td>
+<td style="text-align:right;">
+188
+</td>
+<td style="text-align:right;">
+1538.4
+</td>
+<td style="text-align:left;">
+enri
+</td>
+<td style="text-align:right;">
+5
+</td>
+</tr>
+</tbody>
+</table>
+<p>We can see that, for all countries, their Average RME hovers within
+100 points of the average RME of all active players (1547.5). Also, most
+countries have at least one player in the top 100 RME rankings. This
+suggests that geographic location has little impact on a player’s
+performance in tournaments.</p>
+</div>
+<div id="conclusion" class="section level2">
+<h2>Conclusion</h2>
+<ul>
+<li>Is the official osu! ranking system representative of overall
+skill?</li>
+</ul>
+<p>By looking at the distribution of RME ratings versus Rank, we can see
+(for active players) there is a strong negative logarithmic correlation
+between official rank and RME rating - as a player’s rank decreases
+(i.e. gets closer to #1), their RME rating increases. We also found that
+most top players in one system are also near the top in the other.
+Because of this, we believe that the official osu! ranking system is a
+good indicator of overall skill. However, it isn’t perfect, since we can
+find low-ranked players (below rank 10,000) who play at a very high
+level in tournaments. This implies there is more work to be done in
+accurately rating a player’s skill in osu!.</p>
+</div>
