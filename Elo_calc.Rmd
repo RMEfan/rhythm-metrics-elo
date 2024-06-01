@@ -95,8 +95,8 @@ time_indices <- time_indices %>% arrange(Datetime)
 #calc osu ratings for each month
 osu_ratings_m3 <- NULL
 prev_time <- as.numeric(strptime("2022-01-01 00:00:00", format="%Y-%m-%d %H:%M:%S", tz="UTC"))
-for (i in 2023:2024) {
-  for (j in 1:12) {
+for (i in 2024:2024) {
+  for (j in 6:12) {
     # find this month's map shard indices
     cur_time <- as.numeric(strptime(paste(
       i, "-", j, "-01 00:00:00", sep=""), 
@@ -106,7 +106,7 @@ for (i in 2023:2024) {
       filter(Datetime >= prev_time,
              Datetime < cur_time) %>%
       pull(Index)
-    
+    if (length(month_indices) == 0) next
     # send each index through elom
     for (map_index in month_indices) {
       scorevec <- score_history[[map_index]]
