@@ -27,10 +27,10 @@ phase 1 - collect scores
        add an entry to score_history with timestamp and matrix
        add a row to time_indices with timestamp and latest score_history index
 
-phase 2 - sort score vectors, calculate elo
+phase 2 - sort score vectors, calculate elo per month
   sort score history by datetime
-  iteratively send shards through elom in temporal order
-    send in batches to reduce memory costs
+  iteratively send map shards through elom in temporal order
+    save ratings after each month to keep history
 ```{r}
 scores_raw <- read.csv("csvfiles/mp_data/all_mps_0.csv") %>%
           rbind(read.csv("csvfiles/mp_data/all_mps_1.csv")) %>%
@@ -39,6 +39,7 @@ scores_raw <- read.csv("csvfiles/mp_data/all_mps_0.csv") %>%
           rbind(read.csv("csvfiles/mp_data/all_mps_4.csv")) %>%
           rbind(read.csv("csvfiles/mp_data/all_mps_5.csv")) %>%
           rbind(read.csv("csvfiles/mp_data/all_mps_6.csv"))
+
 scores <- scores_raw %>%
           filter(!is.na(UserID)) %>%
           filter(Score > 1000) %>%
@@ -59,7 +60,7 @@ score_history <- list()
 time_indices <- data.frame(matrix(ncol = 2, nrow = 0))
 colnames(time_indices) <- c("Datetime", "Index")
 
-# collect scores
+# phase 1 - collect scores
 for (map_shard in scores_maps) {
   while (nrow(map_shard) > 0) {
     # get data on the earliest score in the shard
@@ -91,26 +92,41 @@ for (map_shard in scores_maps) {
 # sort score vectors, calc elo in time order
 time_indices <- time_indices %>% arrange(Datetime)
 
+#calc osu ratings for each month
 osu_ratings_m3 <- NULL
-# manually run in batches to keep down memory costs
-i_ranges <- list(1:99, 100:999, 1000:4999, 5000:9999, 10000:19999, 20000:34999, 
-                 35000:49999, 50000:64999, 65000:79999, 80000:94999, 95000:109999, 
-                 110000:124999, 125000:149999, 150000:174999, 175000:199999, 200000:214318)
-i_ranges[[length(i_ranges) + 1]] <- (1:length(time_indices$Datetime))
-# i_ranges[[3]]
-# 150000:214318
-# apply elom
-for (i in 150000:214318) {
-  index = time_indices$Index[i]
-  scorevec <- score_history[[index]]
-  n <- (length(scorevec) - 1) / 2
-  base <- seq(30, -30, length.out=n)
-  
-  osu_ratings_m3 <- elom(scorevec, 
-                           nn = n,
-                           base = base, 
-                           status = osu_ratings_m3$ratings,
-                           history = FALSE)
+prev_time <- as.numeric(strptime("2022-01-01 00:00:00", format="%Y-%m-%d %H:%M:%S", tz="UTC"))
+for (i in 2023:2024) {
+  for (j in 1:12) {
+    # find this month's map shard indices
+    cur_time <- as.numeric(strptime(paste(
+      i, "-", j, "-01 00:00:00", sep=""), 
+      format="%Y-%m-%d %H:%M:%S", tz="UTC"))
+    
+    month_indices <- time_indices %>%
+      filter(Datetime >= prev_time,
+             Datetime < cur_time) %>%
+      pull(Index)
+    
+    # send each index through elom
+    for (map_index in month_indices) {
+      scorevec <- score_history[[map_index]]
+      n <- (length(scorevec) - 1) / 2
+      base <- seq(30, -30, length.out=n)
+      
+      osu_ratings_m3 <- elom(scorevec, 
+                               nn = n,
+                               base = base, 
+                               status = osu_ratings_m3$ratings,
+                               init = 1500,
+                               history = FALSE)
+    
+    }
+    # print to file
+    write.csv(osu_ratings_m3$ratings, 
+            paste("csvfiles/ratings_history/ratings_", i, "-", j, ".csv", sep=""), 
+            row.names = FALSE)
+    prev_time <- cur_time
+  }
 }
 
 #View(osu_ratings_m3$ratings)
