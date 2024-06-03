@@ -1,21 +1,16 @@
 # osu! RME Tournament Rating System
-![logo](logo.png)
+
 ## Purpose
 Players of the online rhythm game osu! often question if the official ranking system accurately rates player skill. To explore this, we calculated a Rhythm Metrics Elo (RME) for every osu! tournament participant from Jan 1 2023 to May 20 2024.
 
-## Questions
-- Who are the best tournament players?
-- Are highly ranked players on the official leaderboards similarly highly ranked in tournament performance?
-- Are highly performant players in tournaments similarly highly ranked in the official leaderboards?
-- Does geographic location have any effect on a player's skill?
-- Is the official osu! ranking system representative of overall skill?
+![logo](logo.png)
 
 ## Data
 I collected the data used in this project by querying the [osu! API](https://osu.ppy.sh/docs/index.html) for multiplayer matches and users. 
 
-The first dataset, **Scores**, records 2 million osu!standard scores set in tournament matches from about Jan 1, 2023 to May 20, 2024. The second, **Players**, records information about each of the 20 thousand players who appear in **Scores**, including official rank, calculated RME rating, and location. You can download **Scores** [here](https://remui.s-ul.eu/McnTR8ejDw1vAN1.zip) and **Players** [here](https://remui.s-ul.eu/0w8a2i9WshTf30t.zip).
+The first dataset, **Scores**, records 2 million osu!standard scores set in tournament matches from about Jan 1, 2023 to May 20, 2024. In the second dataset, for each rating period (month), **Players** records information about each of the 20 thousand players who appear in **Scores**, including official rank, calculated RME rating, and location. You can download **Scores** [here](https://remui.s-ul.eu/McnTR8ejDw1vAN1.zip). You can download **Players** [here](https://remui.s-ul.eu/0w8a2i9WshTf30t.zip) (ratings up to May 20 2024) and [here](https://remui.s-ul.eu/wCmQUSRGxKrzG4m.csv) (rating periods from Jan 1 2023 to April 2024).
 
-There are 8 variables in **Scores**:
+There are 9 variables in **Scores**:
 |Variable|Description|
 |----|----|
 | MatchID | the ID of the tournament match|
@@ -26,12 +21,14 @@ There are 8 variables in **Scores**:
 | Username | who played this map|
 | Mods | which mods the player played with|
 | Score | the score the player achieved|
+| ScoreVersion | the win condition for this map (Score v2, v1, accuracy, combo)|
 
 &nbsp;
 
-There are 9 variables in **Players**:
+There are 10 variables in **Players**:
 |Variable|Description|
 |-|-|
+|RatingPeriod| the rating period this RME was calculated in|
 | UserID    | this player's ID |
 | Username | this player's username|
 | GlobalRank  | this player's official rank|

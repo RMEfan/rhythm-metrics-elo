@@ -1,9 +1,6 @@
 # osu! RME Tournament Rating System
-## INFO 201 "Foundational Skills for Data Science"
 
-Authors: Anh-Minh Nguyen (anhminh.nguyen314 (at) gmail.com)
-
-**Link: https://a-nguyen.shinyapps.io/final-project-anguyenuw/**
+**Link: https://rmefan.shinyapps.io/rhythm-metrics-elo/**
 
 # Introduction
 Players of the online rhythm game osu! often question if the official ranking system accurately rates player skill. To explore this, we calculated a Rhythm Metrics Elo (RME) for every osu! tournament participant from Jan 1 2023 to May 20 2024.
