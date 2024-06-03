@@ -56,6 +56,8 @@ function(input, output, session) {
                         hover = TRUE,
                         width = '100%')
   
+  
+  
   output$distrib_scatter <- renderPlot({
     filtered_users <- base_users %>% filter(
       # num global rank within bounds
@@ -64,11 +66,13 @@ function(input, output, session) {
                               # num maps played within bounds
                               Games >= input$distrib_maps_min,
                               Games <= input$distrib_maps_max,
+                              RME >= input$distrib_rme_min,
+                              RME <= input$distrib_rme_max,
                               # location matches
                               (is.null(input$distrib_locations)) |
                                 (Location %in% input$distrib_locations)) %>%
                              mutate("MapsPlayed" = Games)
-    
+
     p <- ggplot(filtered_users, aes(x = GlobalRank, y = RME, color = MapsPlayed)) + 
               #scale_colour_gradient2(low = "#67c9ff", mid = "#ffffff", midpoint=1000, high = "#f2bbfc") + 
               scale_color_gradientn(colours = c("#00ee99", "#00e7df", "#009edf", "#0053d8", "#000cd0", "#3500c9", "#7200c1", "#aa00ba"),
@@ -77,7 +81,7 @@ function(input, output, session) {
     
               geom_point(size = .7) +
               coord_cartesian(xlim = c(input$distrib_rank_min,input$distrib_rank_max),
-                              ylim = c(500, 3300)) +
+                              ylim = c(input$distrib_rme_min, input$distrib_rme_max)) +
       theme(text = element_text(size = 15))
     
     # log plot
@@ -104,6 +108,8 @@ function(input, output, session) {
       # num maps played within bounds
       Games >= input$distrib_maps_min,
       Games <= input$distrib_maps_max,
+      RME >= input$distrib_rme_min,
+      RME <= input$distrib_rme_max,
       # location matches
       (is.null(input$distrib_locations)) |
         (Location %in% input$distrib_locations)) %>%
