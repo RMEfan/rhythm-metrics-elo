@@ -5,35 +5,10 @@ library(tidyr)
 library(vroom)
 base_users <- vroom("Users.csv", col_types = "iciddicTi")
 base_scores <- vroom("Scores.csv", col_types = "icTiicci")
-tbl_start_at <- 1
-function(input, output) {
-  
-  dataset <- reactive({
-    diamonds[sample(nrow(diamonds), input$sampleSize),]
-  })
-  
-  output$plot <- renderPlot({
-    
-    p <- ggplot(dataset(), aes_string(x=input$x, y=input$y)) + geom_point()
-    
-    if (input$color != 'None')
-      p <- p + aes_string(color=input$color)
-    
-    facets <- paste(input$facet_row, '~', input$facet_col)
-    if (facets != '. ~ .')
-      p <- p + facet_grid(facets)
-    
-    if (input$jitter)
-      p <- p + geom_jitter()
-    if (input$smooth)
-      p <- p + geom_smooth()
-    
-    print(p)
-    
-  }, height=700)
-  
-  
-  
+base_history <- vroom("Players.csv", col_types = "DiciddicTi")
+
+
+function(input, output, session) {
   lb_page <- reactive({ 
     input$user_page %>%
       as.numeric() %>%
@@ -145,23 +120,45 @@ function(input, output) {
     
   })
   
-  output$scores_graph <- renderPlot({
-    players_set <- input$scores_users
-    scoress <- base_scores %>%
-      filter(Score > 100, 
-             Score < 1300000,
-             (Username %in% players_set) | (length(players_set) == 0))
-    hist <- ggplot(scoress, aes(x = Score)) + geom_histogram(binwidth = 10000, colour = "black", fill = "lightblue") 
-    hist <- hist + labs(title="Score distribution", 
-                                          subtitle=paste(players_set, 
-                                                         collapse = ", "), 
-                                          y="Number of scores", 
-                                          x="Score") +
-      theme(text = element_text(size = 15)) + 
-      scale_x_continuous(labels = scales::comma) +
-      scale_y_continuous(labels = scales::comma)
-    hist
-  })
+  
+  output$rating_history_graph <- renderPlot({
+    selected_players <- input$hist_users
+    selected_hist <- base_history %>%
+      filter(Username %in% selected_players)
+    
+    
+    hist_graph <- ggplot(selected_hist, 
+                                 aes(x = RatingPeriod, 
+                                     y = RME,
+                                     color = Username)) +
+      geom_line(lwd = 1.1) + 
+      labs(title="Rating history of selected players",
+           x = "Month", 
+           y = "RME") + 
+      guides(color = guide_legend(title = "Player")) +
+      theme(text = element_text(size = 15))
+
+    hist_graph
+  },
+  width = 1000)
+  
+  #output$scores_graph <- renderPlot({
+  #  players_set <- input$scores_users
+  #  scoress <- base_scores %>%
+  #    filter(Score > 100, 
+  #           Score < 1300000,
+  #           (Username %in% players_set) | (length(players_set) == 0))
+  #  hist <- ggplot(scoress, aes(x = Score)) + geom_histogram(binwidth = 10000, colour = "black", fill = "lightblue") 
+  #  hist <- hist + labs(title="Score distribution", 
+ #                                         subtitle=paste(players_set, 
+  #                                                       collapse = ", "), 
+  #                                        y="Number of scores", 
+  #                                        x="Score") +
+ #     theme(text = element_text(size = 15)) + 
+  #    scale_x_continuous(labels = scales::comma) +
+ #     scale_y_continuous(labels = scales::comma)
+ #   hist
+ # })
   
   
   #output$

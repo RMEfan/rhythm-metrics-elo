@@ -6,7 +6,8 @@ library(dplyr)
 library(markdown)
 library(shinythemes)
 
-userss <- read.csv("Users.csv")
+library(vroom)
+userss <- vroom("Users.csv", col_types = "iciddicTi")
 countries <- userss %>%
   select(Location) %>%
   distinct() %>%
@@ -170,17 +171,36 @@ ditrib_graphs <- mainPanel(plotOutput("distrib_scatter"), plotOutput("distrib_hi
 
 
 # SCORE HISTOGRAM
-scores_user_input <- selectInput(
-          "scores_users",
-          "Select user(s) (default: all users)",
-          players_select,
-          multiple = TRUE,
-          width = "100%")
-scores_params_input <- sidebarPanel(h3("Filter Players"), 
-                                    scores_user_input)
-scores_graph <- mainPanel(plotOutput("scores_graph"))
+#scores_user_input <- selectInput(
+#          "scores_users",
+#          "Select user(s) (default: all users)",
+#          choices = players_select,
+#          multiple = TRUE,
+#          width = "100%")
+#scores_params_input <- sidebarPanel(h3("Filter Players"), 
+#                                    scores_user_input)
+#scores_graph <- mainPanel(plotOutput("scores_graph"))
 
-ui <- page_navbar(
+# RATING HISTORY
+hist_user_input <- selectInput(
+  "hist_users",
+  "Select user(s)",
+  players_select,
+  multiple = TRUE,
+  width = "100%")
+
+#hist_user_input <- selectizeInput("hist_users",
+ #                         choices = "RMEfan",
+ #                         "Select user(s)",
+ #                         multiple = TRUE,
+ #                         width = "100%")
+
+hist_params_input <- sidebarPanel(h3("Filter Players"), 
+                                  hist_user_input)
+#hist_graph <- mainPanel(plotOutput("rating_history_graph"))
+
+
+ui <- fluidPage(page_navbar(
   title = "Rhythm Metrics Elo",
   theme = shinytheme("cosmo"),
   inverse = TRUE,
@@ -188,31 +208,31 @@ ui <- page_navbar(
   nav_panel(title = "Homepage", includeMarkdown("homepage.md")
             ),
   nav_panel(title = "Leaderboard", 
-            h2("RME Leaderboard"), 
-            p("Sorting players by their RME ranking will help us answer questions about the highest ranked players in each ranking system. Note that players start with 1500 RME, so players with very few maps played (under 30) might have an inaccurate rating close to 1500 RME."),
+            h2("RME Leaderboard"),
             sidebarLayout(lb_params_input, lb_table)
             ),
   nav_panel(title = "RME Distribution", 
             h2("Distribution of players in the RME system"),
-            p("Comparing players' official rankings vs RME ratings reveals clear trends between a player's rank and their overall tournament skill."),
             sidebarLayout(distrib_params_input, ditrib_graphs)
             ),
-  nav_panel(title = "Score Distribution", 
-            p("Analyzing the distribution of scores of multiple players can show us how individual players perform in tournaments."),
-            h2("Distribution of scores by selected players"),
-            sidebarLayout(scores_params_input, scores_graph)
-           ),
-  nav_panel(title = "Takeaways", includeHTML("./takeaways.html")
-            ),
+ # nav_panel(title = "Score Distribution", 
+ #           h2("Distribution of scores by selected players"),
+  #          sidebarLayout(scores_params_input, scores_graph)
+ #          ),
+  nav_panel(title = "Rating History", 
+            div(style="display: inline-block;vertical-align:middle; width: 100%;", ""),
+            hist_params_input,
+            #sidebarLayout(hist_params_input, hist_graph)),
+            plotOutput("rating_history_graph", width = "100%")),
   nav_spacer(),
   nav_menu(
     title = "Other",
     align = "right",
-    nav_item(tags$a("Source code", href = "https://github.com/info-201b-sp24/final-project-anguyenuw")),
+    nav_item(tags$a("Source code", href = "https://github.com/RMEfan/rhythm-metrics-elo")),
     nav_item(tags$a("Created with Shiny", href = "https://shiny.posit.co"))
   )
 )
-
-
-fluidPage(ui
 )
+
+#fluidPage(ui
+#)
