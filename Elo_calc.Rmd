@@ -95,12 +95,12 @@ time_indices <- time_indices %>% arrange(Datetime)
 #calc osu ratings for each month
 osu_ratings_m3 <- NULL
 start_year <- 2024
-start_month <- 7
+start_month <- 4
 prev_time <- as.numeric(strptime(paste(
       start_year, "-", start_month, "-01 00:00:00", sep=""),
       format="%Y-%m-%d %H:%M:%S", tz="UTC"))
 for (i in 2024:2024) {
-  for (j in 7:12) {
+  for (j in 5:5) {
     # find this month's map shard indices
     cur_time <- as.numeric(strptime(paste(
       i, "-", j, "-01 00:00:00", sep=""), 
@@ -158,24 +158,55 @@ player_data <- read.csv("csvfiles/user_data/user_data_0.csv") %>%
   rbind(read.csv("csvfiles/user_data/user_data_5.csv")) %>%
   rbind(read.csv("csvfiles/user_data/user_data_6.csv"))
 
-# fill in RME ratings
-player_data <- player_data %>%
-  left_join(osu_ratings_m3$ratings, by = join_by(UserID == Player)) %>%
-  mutate(RME = Rating) %>%
-  select(UserID, Username, GlobalRank, PP, RME, Location, RegistrationDate, Games)
+years <- 2024:2024
+months <- 1:4
 
-# delete NA values
-# these may happen because a player was banned between 2023 and now
-player_data <- player_data %>%
-  filter((!is.na(RME)) & (!is.na(GlobalRank))) 
+# load RME ratings for each year/month
+for (year in years) {
+  for (month in months) {
+    rme_ratings <- read.csv(paste("csvfiles/ratings_history/ratings_", year, "-", month, ".csv", sep=""))
+    
+    #print(paste("hey", year, month, sep=" "))
 
-# append ordinal rankings by RME
-player_data <- player_data %>%
-  arrange(desc(RME)) %>%
-  mutate(RMERanking = 1:length(player_data$UserID), .after=RME)
+    # fill in RME ratings
+    month_data <- player_data %>%
+      left_join(rme_ratings, by = join_by(UserID == Player)) %>%
+      mutate(RME = Rating, RatingPeriod = as.Date(paste(year, month, "01", sep="-"))) %>%
+      select(RatingPeriod, UserID, Username, GlobalRank, PP, RME, Location, RegistrationDate, Games)
+    
+    #print(month_data %>% slice_head(n=1))
+    #next
+    # delete NA values
+    # these may happen because a player was banned between 2023 and now
+    month_data <- month_data %>%
+      filter((!is.na(RME)) & (!is.na(GlobalRank))) 
+    
+    # append ordinal rankings by RME
+    month_data <- month_data %>%
+      arrange(desc(RME)) %>%
+      mutate(RMERanking = 1:length(month_data$UserID), .after=RME)
+    
+    write.csv(month_data, paste("csvfiles/user_rating_history/users_with_RME_", 
+                                 year, "-", month, 
+                                 ".csv", sep=""), row.names = FALSE)
+  }
+}
 
-write.csv(player_data, "csvfiles/user_data/users_with_RME.csv", row.names = FALSE)
 ```
+
+
+combine rme history into one file
+```{r}
+files <- list.files(path = "csvfiles/user_rating_history/", pattern = "*.csv")
+
+#print(files)
+
+combined <- do.call(rbind, lapply(paste("csvfiles/user_rating_history/", files, sep=""), read.csv))
+
+write.csv(combined, "Rating_history.csv", row.names = FALSE)
+
+```
+
 
 
 # verify raw data
