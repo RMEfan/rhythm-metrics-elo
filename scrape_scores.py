@@ -9,7 +9,7 @@ import traceback
 import aiohttp
 from time import sleep
 from constants import *
-from ossapi import OssapiAsync, UserLookupKey, GameMode, RankingType, MatchEventType, BeatmapsetCompact, Ossapi
+from ossapi import OssapiAsync, UserLookupKey, GameMode, RankingType, MatchEventType, BeatmapsetCompact, Ossapi, ScoringType
 from ossapi import User
 
 api = OssapiAsync(CLIENT_ID, API_KEY)
@@ -17,12 +17,12 @@ aapi = Ossapi(CLIENT_ID, API_KEY)
 
 # a tournament match is defined as a multiplayer match whose name fits the format
 #   name: (team 1) vs (team 2)
-tourney_re = re.compile(r".*: \(.*\) [vV][sS]?\.? \(.*\)")
+tourney_re = re.compile(r".*: ?\(.*\) ?[vV][sS]?\.? ?\(.*\)")
 
 async def scrape_all(mod, start, end, overwrite = False):
     start_id = start
     end_id =   end
-    dest = f"csvfiles/mp_data/all_mps_a{mod}.csv"
+    dest = f"csvfiles/mp_data/all_mps_{mod}.csv"
     logdest = f"csvfiles/mp_data/id_abbrs_osu_{mod}.csv"
     if overwrite: 
         with open(dest, "w", newline='') as f:
@@ -34,7 +34,8 @@ async def scrape_all(mod, start, end, overwrite = False):
                         "UserID", 
                         "Username", 
                         "Mods", 
-                        "Score"))
+                        "Score",
+                        "ScoreVersion"))
     prev_time = datetime.datetime.now()
     for i in range(start_id, end_id):
         if not (i%7 == mod):
@@ -106,7 +107,9 @@ async def scrape_all(mod, start, end, overwrite = False):
                                 score.user_id, 
                                 user_dict[score.user_id], 
                                 score.mods, 
-                                score.score)
+                                score.score,
+                                game.scoring_type.value
+                                )
                         await write_csv(line, dest)
             except ValueError:
             # expired mp link
@@ -147,6 +150,9 @@ async def write_csv(obj, filename, mode="a"):
 def perror(message):
     print(message, file = sys.stderr)
 
+def usage():
+    perror(f"usage: scrape_scores.py start_mp end_mp [--overwrite]")
+
 async def main():
     args = sys.argv
     start = 0
@@ -155,16 +161,15 @@ async def main():
         start = int(args[1])
         end = int(args[2])
     except IndexError:
-        if len(args) != 4:               
-            perror(f"usage: scrape_scores.py start_mp end_mp [--overwrite]")
+        if len(args) < 3:               
+            usage()
             perror(f"error: not enough arguments")
             return
     except ValueError:
-        perror(f"usage: scrape_scores.py start_mp end_mp [--overwrite]")
+        usage()
         perror(f"error: invalid int argument: {args[1]} or {args[2]}")
         return
-    overwrite = False
-    if len(args) == 4: overwrite = args[3] == "--overwrite"
+    overwrite = "--overwrite" in args
     async with asyncio.TaskGroup() as tg:
         task0 = tg.create_task(scrape_all(0, start, end, overwrite=overwrite))
         task1 = tg.create_task(scrape_all(1, start, end, overwrite=overwrite))
